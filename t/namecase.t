@@ -4,7 +4,7 @@
 
 Test script for Lingua::EN::NameCase.pm
 
-Copyright (c) Mark Summerfield 1998/9. All Rights Reserved. This program is
+Copyright (c) Mark Summerfield 1998-2000. All Rights Reserved. This program is
 free software; you can redistribute it and/or modify it under the GPL. 
 
 =cut
@@ -49,7 +49,7 @@ my $fixed_name ;
 
 my $i = 1 ;
 
-$" = ", " ;
+$" = ", " ; #"
 
 print "1..21\n" ;
 
@@ -217,7 +217,6 @@ if $debugging ;
 print "" . ( $result[0] eq $proper_names[1] ? "ok\n" : "not ok\a\n" ) 
 if $debugging ;
 print "" . ( $result[0] eq $proper_names[1] ? "ok $i\n" : "not ok $i\n" ) ; $i++ ;
-
 
 sub eq_array {
     my( $array_ref_A, $array_ref_B ) = @_ ;
