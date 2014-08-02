@@ -3,9 +3,9 @@ package Lingua::EN::NameCase;
 use strict;
 use locale;
 
-use vars qw( $VERSION @ISA @EXPORT @EXPORT_OK $SPANISH );
+use vars qw( $VERSION @ISA @EXPORT @EXPORT_OK $HEBREW $SPANISH $ROMAN $POSTNOMINAL );
 
-$VERSION = '1.16';
+$VERSION = '1.17';
 
 #--------------------------------------------------------------------------
 # Modules
@@ -20,7 +20,36 @@ use Exporter();
 #--------------------------------------------------------------------------
 # Variables
 
-$SPANISH    = 0;
+$HEBREW         = 1;
+$SPANISH        = 0;
+$ROMAN          = 1;
+$POSTNOMINAL    = 1;
+
+my @POST_NOMINAL_INITIALS = qw(
+    VC GC KG LG KT LT KP GCB OM GCSI GCMG GCIE GCVO GBE CH KCB DCB KCSI KCMG 
+    DCMG KCIE KCVO DCVO KBE DBE CB CSI CMG CIE CVO CBE DSO LVO OBE ISO MVO MBE
+    IOM CGC RRC DSC MC DFC AFC ARRC OBI DCM CGM GM IDSM DSM MM DFM AFM SGM IOM
+    CPM QGM RVM BEM QPM QFSM QAM CPM MSM ERD VD TD UD ED RD VRD AE
+    
+    PC ADC QHP QHS QHDS QHNS QHC SCJ J LJ QS SL QC KC JP DL MP MSP MSYP AM AM 
+    MLA MEP  DBEnv DConstMgt DREst EdD DPhil PhD DLitt DSocSci MD EngD DD LLD 
+    DProf MA MArch MAnth MSc MMORSE MMath MMathStat MPharm MPhil MSc MSci MSt 
+    MRes MEng MChem MBiochem MSocSc MMus LLM BCL MPhys MComp MAcc MFin MBA MPA
+    MEd MEP MEnt MCGI MGeol MLitt MEarthSc MClinRes BA BSc LLB BEng MBChB FdA
+    FdSc FdEng PgDip PgD PgCert PgC PgCLTHE AUH AKC AUS HNC HNCert HND HNDip 
+    DipHE Dip OND CertHE ACSM MCSM DIC AICSM ARSM ARCS LLB LLM BCL MJur DPhil 
+    PhD LLD DipLP FCILEx GCILEx ACILEx CQSW DipSW BSW MSW FCILT CMILT MILT CPL
+    CTP CML PLS CTL DLP PLog EJLog ESLog EMLog JrLog Log SrLog BArch MArch ARB
+    RIBA RIAS RIAI RSAW MB BM BS BCh BChir MRCS FRCS MS MCh. MRCP FRCP MRCPCH
+    FRCPCH MRCPath MFPM FFPM BDS MRCPsych FRCPsych MRCOG FRCOG MCEM FCEM FRCA
+    FFPMRCA MRCGP FRCGP BSc MScChiro MChiro MSc DC LFHOM MFHOM FFHOM FADO FBDO
+    FCOptom MCOptom MOst DPT MCSP FCSP. SROT MSCR FSCR. CPhT RN VN RVN BVSc
+    BVetMed VetMB BVM&S MRCVS FRCVS FAWM PGCAP PGCHE PGCE PGDE BEd NPQH QTS
+    CSci CSciTeach RSci RSciTech CEng IEng EngTech ICTTech DEM MM CMarEng
+    CMarSci CMarTech IMarEng MarEngTech RGN SRN RMN RSCN SEN EN RNMH RN RM RN1
+    RNA RN2 RN3 RNMH RN4 RN5 RNLD RN6 RN8 RNC RN7 RN9 RHV RSN ROH RFHN SPAN
+    SPMH SPCN SPLD SPHP SCHM SCLD SPCC SPDN V100 V200 V300 LPE MSc
+);
 
 #--------------------------------------------------------------------------
 # Functions
@@ -109,7 +138,10 @@ sub nc {
     # Fixes for "son (daughter) of" etc. in various languages.
     s{ \b Al(?=\s+\w)  }{al}gx;                     # al Arabic or forename Al.
     s{ \b Ap        \b }{ap}gx;                     # ap Welsh.
-    s{ \b Ben(?=\s+\w) }{ben}gx;                    # ben Hebrew or forename Ben.
+    # <http://www.jewfaq.org/jnames.htm> search for: followed by ben
+    # without first (?<=\S\s), first name of 'ben jones' remains lowercase
+    s{ (?<=\S\s)\bBen(?=\s+\w) }{ben}gx if $HEBREW; # ben Hebrew or forename Ben.
+    s{ (?<=\S\s)\bBat(?=\s+\w) }{bat}gx if $HEBREW; # bat Hebrew or forename Bat.
     s{ \b Dell([ae])\b }{dell$1}gx;                 # della and delle Italian.
     s{ \b D([aeiu]) \b }{d$1}gx;                    # da, de, di Italian; du French.
     s{ \b De([lr])  \b }{de$1}gx;                   # del Italian; der Dutch/Flemish.
@@ -119,9 +151,18 @@ sub nc {
     s{ \b Van(?=\s+\w) }{van}gx;                    # van German or forename Van.
     s{ \b Von       \b }{von}gx;                    # von Dutch/Flemish
 
-    # Fixes for roman numeral names, e.g. Henry VIII, up to 89, LXXXIX
-    s{ \b ( (?: [Xx]{1,3} | [Xx][Ll]   | [Ll][Xx]{0,3} )?
-            (?: [Ii]{1,3} | [Ii][VvXx] | [Vv][Ii]{0,3} )? ) \b }{\U$1}gx;
+    if($ROMAN) {
+        # Fixes for roman numeral names, e.g. Henry VIII, up to 89, LXXXIX
+        s{ \b ( (?: [Xx]{1,3} | [Xx][Ll]   | [Ll][Xx]{0,3} )?
+                (?: [Ii]{1,3} | [Ii][VvXx] | [Vv][Ii]{0,3} )? ) \b }{\U$1}gx;
+    }
+
+    if($POSTNOMINAL) {
+        # post-nominal initials
+        for my $pni (@POST_NOMINAL_INITIALS) {
+            s{ \b ($pni)    $}{$pni}ix;
+        }
+    }
 
     $_;
 }
@@ -165,6 +206,16 @@ Lingua::EN::NameCase - Correctly case a person's name from UPERCASE or lowcase
     # Now 'El' => 'El' instead of (default) Greek 'El' => 'el'.
     # Now 'La' => 'La' instead of (default) French 'La' => 'la'.
 
+    $Lingua::EN::NameCase::HEBREW = 0;
+    # Now 'Aharon BEN Amram Ha-Kohein' => 'Aharon Ben Amram Ha-Kohein' 
+    #   instead of (default) => 'Aharon ben Amram Ha-Kohein'.
+
+    $Lingua::EN::NameCase::ROMAN = 0;
+    # Now 'Li' => 'Li' instead of (default) 'Li' => 'LI'.
+
+    $Lingua::EN::NameCase::POSTNOMINAL = 0;
+    # Now 'PHD' => 'PhD' instead of (default) 'PHD' => 'Phd'.
+
 =head1 DESCRIPTION
 
 Forenames and surnames are often stored either wholly in UPPERCASE
@@ -181,7 +232,7 @@ following:
     Mc, Mac, al, el, ap, da, de, delle, della, di, du, del, der,
     la, le, lo, van and von.
 
-It correctly deals with names which contain apostrophies and hyphens too.
+It correctly deals with names which contain apostrophes and hyphens too.
 
 =head2 EXAMPLE FIXES
 
