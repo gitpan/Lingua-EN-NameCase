@@ -1,6 +1,12 @@
 Revision history for Lingua-EN-NameCase
 =======================================
 
+1.18    2014-10-11
+        - fixed license fields in META.json to be lists.
+        - simplified parameter logic checks.
+        - added tests to check bad calls.
+        - Devel::Cover = 100%
+
 1.17    2014-08-02
         - switch to Test::More in tests.
         - RT#88359 - typo fix (thanks to dsteinbrunner).
@@ -8,7 +14,7 @@ Revision history for Lingua-EN-NameCase
         - added Post-Nominial Initials, based on RT#47708 (thanks to Dave Gray
           and Mark Summerfield for the ideas). The current list isn't
           exhaustive, but should suffice for now.
-        - RT#46669 - Ben first name (thanks to Dave gray).
+        - RT#46669 - Ben first name (thanks to Dave Gray).
         - added $HEBREW switch.
         - added 'bat', daughter of, in HEBREW.
 
